@@ -1,0 +1,32 @@
+# This YAML file defines the build pipeline for a React app in Azure DevOps,
+# triggered only when changes are made to a specific folder.
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - "src/ui/**"
+pool:
+  vmImage: "windows-latest"
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+  - task: Cache@2
+    inputs:
+      key: 'npm | "$(Agent.OS)" | src/ui/package-lock.json'
+      path: "$(Pipeline.Workspace)src/ui/node_modules"
+      cacheHitVar: "npmCacheHit"
+    displayName: Cache Node.js modules
+  - script: |
+      cd src/ui
+      npm ci
+      npm run build
+    displayName: "npm install and build"
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathtoPublish: 'src/ui/build'
+#     artifactName: 'build'
+#   displayName: 'Publish build artifacts'
